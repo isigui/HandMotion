@@ -1,0 +1,433 @@
+﻿<Window x:Class="HandMotion.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:System.Windows.Converters;assembly=WindowsBase"
+        xmlns:local="clr-namespace:HandMotion"
+        mc:Ignorable="d"
+        WindowState="Maximized"
+         WindowStartupLocation="CenterOwner"
+        Title="MainWindow" Height="780" Width="1024">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <CheckBox IsChecked="{Binding ShowDebug, Mode=TwoWay}" Content="Display Steps"></CheckBox>
+            <ItemsControl Visibility="{Binding ShowDebug, Converter={StaticResource BooleanToVisibilityConverter}}" ItemsSource="{Binding Pipeline.Steps}" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="2" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Stretch" Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" IsChecked="{Binding Filter.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+                                <TextBlock FontWeight="Bold"  Text="{Binding Filter.FilterName}"></TextBlock>
+                                <TextBlock FontWeight="Bold"  Text="{Binding Result.Format}"></TextBlock>
+                                <TextBlock FontWeight="Bold"  Text="{Binding Result.Filter.ComputeTime, StringFormat= (\{0\} ms)}"></TextBlock>
+                            </StackPanel>
+                            <Image Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Source="{Binding Result.OutputImageSource}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <Grid VerticalAlignment="Stretch"  Grid.Column="1" Grid.RowSpan="2" ScrollViewer.VerticalScrollBarVisibility="Auto"  Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="30"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Background="DarkBlue">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Tracker.ElapsedMilliseconds, StringFormat=\{0\} ms}" Foreground="White"></TextBlock>
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Tracker.FPS, StringFormat=\{0\} fps}" Foreground="White"></TextBlock>
+                    <TextBlock Text="{Binding Tracker.SamplesInBuffer, StringFormat=\{0\} samples in buffer}" Foreground="White"  HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                </StackPanel>
+
+                <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Tracker.FrameCount, StringFormat=\{0\} frames}" Foreground="White"></TextBlock>
+            </Grid>
+            <TabControl Grid.Row="1">
+                <TabItem Header="Filter config">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+
+                        </Grid.RowDefinitions>
+
+
+                        <GroupBox Grid.Row="0" Header="Image Scale">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Scale down"/>
+                                    <Slider Width="100" Value="{Binding Config.ScaleDownConfig.ScaleDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="10" SmallChange="1"></Slider>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Row="1" Header="Threshold">
+                            <TabControl>
+                                <TabItem Header="HSV">
+
+                                    <StackPanel Orientation="Vertical">
+                                        <StackPanel Margin="5">
+                                            <CheckBox IsChecked="{Binding Config.SkinDetectConfig.HSVThresholdConfig.IsActive, Mode=TwoWay}"></CheckBox>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Min H" Width="40"/>
+                                                <Slider Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.H.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.H.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                                <TextBlock Text="Max H" Width="40"/>
+                                                <Slider Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.H.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.H.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Min S" Width="40"/>
+                                                <Slider Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.S.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.S.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                                <TextBlock Text="Max S" Width="40"/>
+                                                <Slider Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.S.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.S.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Min V" Width="40"/>
+                                                <Slider Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.V.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.V.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                                <TextBlock Text="Max V" Width="40"/>
+                                                <Slider  Width="80" Value="{Binding Config.SkinDetectConfig.HSVThresholdConfig.V.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                                <TextBox Text="{Binding Config.SkinDetectConfig.HSVThresholdConfig.V.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+
+                                            </StackPanel>
+                                        </StackPanel>
+                                    
+                                </TabItem>
+                                <TabItem Header="YCrCb">
+                                    <StackPanel>
+                                        <StackPanel Margin="5">
+                                            <CheckBox IsChecked="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.IsActive, Mode=TwoWay}"></CheckBox>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Min Y" Width="40"/>
+                                            <Slider Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Y.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Y.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                            <TextBlock Text="Max Y" Width="40"/>
+                                            <Slider Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Y.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Y.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Min Cr" Width="40"/>
+                                            <Slider Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cr.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cr.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                            <TextBlock Text="Max Cr" Width="40"/>
+                                            <Slider Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cr.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cr.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Min Cb" Width="40"/>
+                                            <Slider Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cb.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cb.Min, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,10,0" />
+
+                                            <TextBlock Text="Max Cb" Width="40"/>
+                                            <Slider  Width="80" Value="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cb.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                            <TextBox Text="{Binding Config.SkinDetectConfig.YCrCbThresholdConfig.Cb.Max, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  TextAlignment="Right" Width="30" Margin="0,0,0,0" />
+
+                                        </StackPanel>
+                                    </StackPanel>
+                                </TabItem>
+                            </TabControl>
+                        </GroupBox>
+
+                        <GroupBox Grid.Row="2" Header="Blur">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Kernel size"/>
+                                    <Slider Width="100" Value="{Binding Config.BlurConfig.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" SmallChange="1"></Slider>
+                                    <TextBlock Text="{Binding Config.BlurConfig.Size, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                                    <TextBlock Text="Sigma"/>
+                                    <Slider Width="100" Value="{Binding Config.BlurConfig.Sigma, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" SmallChange="1"></Slider>
+                                    <TextBlock Text="{Binding Config.BlurConfig.Sigma, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Row="3" Header="Face">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="scale"/>
+                                    <Slider Width="70" Value="{Binding Config.FaceConfig.Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="10" SmallChange="1"></Slider>
+
+                                    <TextBlock Text="min neighbours"/>
+                                    <Slider Width="70" Value="{Binding Config.FaceConfig.MinNeighBours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" SmallChange="1"></Slider>
+
+                                    <TextBlock Text="min face size"/>
+                                    <Slider Width="70" Value="{Binding Config.FaceConfig.MinSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="400" SmallChange="1"></Slider>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Row="4" Header="Morph">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Kernel Size"/>
+                                    <Slider Width="100" Value="{Binding Config.MorphConfig.KernelSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="30" SmallChange="1"></Slider>
+
+                                    <TextBlock Text="MorphType"/>
+                                    <ComboBox SelectedValuePath="Content"  SelectedValue="{Binding Config.MorphConfig.MorphType,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <ComboBoxItem Content="Erode" />
+                                        <ComboBoxItem Content="Delate"  />
+                                        <ComboBoxItem Content="Open" />
+                                        <ComboBoxItem Content="Close"/>
+                                        <ComboBoxItem Content="Gradient"  />
+                                        <ComboBoxItem Content="TopHat"  />
+                                        <ComboBoxItem Content="BlackHat"  />
+                                        <ComboBoxItem Content="HitMiss"  />
+                                    </ComboBox>
+
+                                </StackPanel>
+
+                            </StackPanel>
+                        </GroupBox>
+
+
+                        <GroupBox Grid.Row="6" Header="Background Threshold">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Threshold"/>
+                                <Slider Value="{Binding Config.BackGroundRemoveConfig.BackGroundThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="255" SmallChange="1"></Slider>
+                                <Image Source="{Binding W_BACKGROUND, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Image>
+                            </StackPanel>
+                        </GroupBox>
+
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Color Skin Calibration">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="20"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+
+                        </Grid.RowDefinitions>
+
+                        <GroupBox Grid.Row="0" Header="Hand Target">
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Calibration duration"></TextBlock>
+                                    <Slider Width="100" Value="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.CalibrationDuration}" Minimum="1" Maximum="60"></Slider>
+                                    <TextBlock Text="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.CalibrationDuration, StringFormat= \{0\} secondes}"></TextBlock>
+                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <GroupBox Grid.Column="0" Header="Define ROI">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="W"></TextBlock>
+                                                <Slider Width="70" Value="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.Width, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="3" Maximum="{Binding ColorSkinCalibration.MaxWidth, UpdateSourceTrigger=PropertyChanged}"></Slider>
+                                                <TextBlock Text="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.Width, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                                                <TextBlock Text="H"></TextBlock>
+                                                <Slider Width="70" Value="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.Height, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="3" Maximum="{Binding ColorSkinCalibration.MaxHeight, UpdateSourceTrigger=PropertyChanged}"></Slider>
+                                                <TextBlock Text="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.Height, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="TLX"></TextBlock>
+                                                <Slider Width="70" Value="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.TLX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="{Binding ColorSkinCalibration.MaxWidth, UpdateSourceTrigger=PropertyChanged}"></Slider>
+                                                <TextBlock Text="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.TLX}"></TextBlock>
+                                                <TextBlock Text="TLY"></TextBlock>
+                                                <Slider Width="70" Value="{Binding ColorSkinCalibration.Config.TLY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="3" Maximum="{Binding ColorSkinCalibration.MaxHeight, UpdateSourceTrigger=PropertyChanged}"></Slider>
+                                                <TextBlock Text="{Binding ColorSkinCalibration.ColorSkinCalibrationConfig.TLY}"></TextBlock>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox Grid.Column="1" Header="Automatic">
+                                        <CheckBox IsChecked="{Binding ColorSkinCalibration.UseHeadDetection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">Head detection</CheckBox>
+                                    </GroupBox>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Grid.Row="1" Header="Target Visualization">
+                            <TabControl>
+                                <TabItem Header="Visualisation">
+                                    <Image Source="{Binding ColorSkinCalibration.W_HANDTARGET, UpdateSourceTrigger=PropertyChanged}"></Image>
+                                </TabItem>
+                                <TabItem Header="Background + HSV">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto"></RowDefinition>
+                                            <RowDefinition Height="*"></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel>
+                                            <GroupBox Header="Settings">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="Kernel size"/>
+                                                        <!--<Slider Width="30" Value="{Binding ColorSkinCalibration.BlurConfig.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" SmallChange="1"></Slider>-->
+                                                        <TextBox Width="30" Text="{Binding ColorSkinCalibration.BlurConfig.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+
+                                                        <TextBlock Text="Sigma"/>
+                                                        <!--<Slider Width="30" Value="{Binding ColorSkinCalibration.BlurConfig.Sigma, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" SmallChange="1"></Slider>-->
+                                                        <TextBox Width="30" Text="{Binding ColorSkinCalibration.BlurConfig.Sigma, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+
+                                                        <TextBlock Text=" BG Threshold"/>
+                                                        <TextBox Width="30" Text="{Binding  ColorSkinCalibration.BackGroundRemoveConfig.BackGroundThreshold, Mode=TwoWay}"></TextBox>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <CheckBox Margin="0,0,10,0" IsChecked="{Binding ColorSkinCalibration.EqualizeHistogramConfig.IsActive, Mode=TwoWay}">eq</CheckBox>
+                                                        <CheckBox Margin="0,0,10,0" IsChecked="{Binding ColorSkinCalibration.BlurConfig.IsActive, Mode=TwoWay}">blur</CheckBox>
+                                                        <CheckBox Margin="0,0,10,0" IsChecked="{Binding ColorSkinCalibration.BackGroundRemoveConfig.IsActive, Mode=TwoWay}">bg threshold</CheckBox>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </GroupBox>
+
+                                        </StackPanel>
+                                        <!--<Image Grid.Row="1" Grid.Column="0" Source="{Binding ColorSkinCalibration.W_BACKGROUND_SUBSTRACTED, UpdateSourceTrigger=PropertyChanged}"></Image>-->
+                                        <Grid Grid.Row="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <Image Grid.Column="0" Grid.Row="0" Source="{Binding ColorSkinCalibration.W_CROPPED, UpdateSourceTrigger=PropertyChanged}"></Image>
+                                            <Image Grid.Column="0" Grid.Row="1" Source="{Binding ColorSkinCalibration.W_BACKGROUND_SUBSTRACTED, UpdateSourceTrigger=PropertyChanged}" ></Image>
+                                            <Image Grid.Column="0" Grid.Row="2" Source="{Binding ColorSkinCalibration.W_HSV, UpdateSourceTrigger=PropertyChanged}"></Image>
+                                            <Image Grid.Column="0" Grid.Row="3" Source="{Binding ColorSkinCalibration.W_YCRCB, UpdateSourceTrigger=PropertyChanged}"></Image>
+
+                                            <Image Grid.Column="1" Grid.Row="0" Source="{Binding ColorSkinCalibration.W_HISTO_H, UpdateSourceTrigger=PropertyChanged}" Stretch="Fill" ></Image>
+                                            <Image MouseDown="Image_MouseDown" Grid.Column="1" Grid.Row="1" Source="{Binding ColorSkinCalibration.W_HISTO_S, UpdateSourceTrigger=PropertyChanged}" Stretch="Fill"></Image>
+                                            <Image Grid.Column="1" Grid.Row="2" Source="{Binding ColorSkinCalibration.W_HISTO_V, UpdateSourceTrigger=PropertyChanged}" Stretch="Fill"></Image>
+                                        </Grid>
+
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </GroupBox>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="{Binding ColorSkinCalibration.Result.HSV.H, StringFormat=H: \{0\}}"></TextBlock>
+                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding ColorSkinCalibration.Result.HSV.S, StringFormat=S: \{0\}}"></TextBlock>
+                            <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="{Binding ColorSkinCalibration.Result.HSV.V, StringFormat=V: \{0\}}"></TextBlock>
+
+                            <TextBlock VerticalAlignment="Center" Grid.Column="3" Text="{Binding ColorSkinCalibration.Result.YCRCB.Y, StringFormat=Y: \{0\}}"></TextBlock>
+                            <TextBlock VerticalAlignment="Center" Grid.Column="4" Text="{Binding ColorSkinCalibration.Result.YCRCB.Cr, StringFormat=Cr: \{0\}}"></TextBlock>
+                            <TextBlock VerticalAlignment="Center" Grid.Column="5" Text="{Binding ColorSkinCalibration.Result.YCRCB.Cb, StringFormat=Cb: \{0\}}"></TextBlock>
+
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto" MinWidth="30"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="ACTIVER" Command="{Binding ActivateCalibrateColorSkinCommand}"></Button>
+                            <Button Grid.Column="1" Content="START CALIBRATION" Command="{Binding CalibrateColorSkinCommand}"></Button>
+                            <TextBlock Text="{Binding ColorSkinCalibration.RemainingSeconds, UpdateSourceTrigger=PropertyChanged}" Grid.Column="2"></TextBlock>
+                        </Grid>
+
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Tracker config">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+
+                        </Grid.RowDefinitions>
+
+                        <GroupBox Grid.Row="0" Header="Tracker Duration">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Buffer lifetime"/>
+                                    <Slider Width="100" Value="{Binding Config.TrackerConfig.BufferDuration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="500" Maximum="10000" SmallChange="10"></Slider>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Min Hand area"/>
+                                    <Slider Width="100" Value="{Binding Config.TrackerConfig.MinHandAreaSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="20" Maximum="10000" SmallChange="10"></Slider>
+                                </StackPanel>
+                            </StackPanel>
+
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <GroupBox Grid.Row="2" Header="Result">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <CheckBox Grid.Row="0" IsChecked="{Binding Tracker.ShowOutput, Mode=TwoWay}">Output</CheckBox>
+                    <Image Grid.Row="1" Source="{Binding W_OUTPUT, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalAlignment="Center"></Image>
+                </Grid>
+            </GroupBox>
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                <Button Command="{Binding SaveConfigCommand}" Content="SAVE CONFIG" Margin="5"></Button>
+                <Button Command="{Binding LoadDefaultConfigCommand}" Content="LOAD DEFAULT" Margin="5"></Button>
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal">
+            <Button Command="{Binding StartCommand}" Content="START" Width="100" Margin="5"></Button>
+            <Button Command="{Binding StopCommand}" Content="STOP"  Width="100" Margin="5"></Button>
+            <Button Command="{Binding TakeScreenShotCommand}" Content="SCREENSHOT"  Width="100" Margin="5"></Button>
+            <Button Command="{Binding CalibrateBackgroundCommand}" Content="CALIBRATE BACKGROUND"  Width="150" Margin="5"></Button>
+        </StackPanel>
+
+    </Grid>
+</Window>
